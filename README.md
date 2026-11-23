@@ -17,3 +17,10 @@ The public API is `encode(bytes)` and `decode(str)`. `encode` accepts a `Uint8Ar
 Base45 is a binary-to-text encoding designed for QR codes: it uses a 45-character alphabet that avoids characters which force QR alphanumeric mode to switch to byte mode, and it encodes two bytes as three characters (and one byte as two). This library is a small, dependency-free implementation of the RFC so that generated QR payloads can be decoded without pulling in a larger toolkit. The trade-off is size: Base45 expands binary data by roughly 50%, which is acceptable for the short payloads QR codes typically carry.
 
 The awkward edge is the trailing byte. A single leftover byte is encoded as two Base45 characters, so a valid encoded string has length 2 or 3 modulo 3 — never 1. Decoding a string whose length is 1 modulo 3 throws `Base45Error`. The decoder also rejects groups that decode to values larger than 255 (two characters) or 65535 (three characters), which can happen with syntactically valid but semantically invalid input.
+
+## Performance
+
+The window keeps a bounded buffer, so `push` is constant time and memory does not
+grow with the length of the stream. `peak` and `trough` are linear in the window
+size, which is the trade that keeps `push` cheap.
+
